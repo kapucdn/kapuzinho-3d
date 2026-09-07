@@ -217,7 +217,12 @@
   </div>
 
   <section>
-    <h2><span class="dot"></span>Cliques por nicho</h2>
+    <h2><span class="dot"></span>Cliques em filtros de nicho</h2>
+    <div id="table-niche-filters"></div>
+  </section>
+
+  <section>
+    <h2><span class="dot"></span>Cliques por nicho (em "pedir")</h2>
     <div id="table-niches"></div>
   </section>
 
@@ -324,6 +329,15 @@
 
     const views = events.filter(e => e.type === 'view').length;
     const clicks = events.filter(e => e.type === 'click');
+    const nicheFilters = events.filter(e => e.type === 'niche');
+
+    const byNicheFilter = {};
+    nicheFilters.forEach(e => {
+      const n = e.niche || '(sem nicho)';
+      byNicheFilter[n] = (byNicheFilter[n] || 0) + 1;
+    });
+    const nicheFilterRows = Object.entries(byNicheFilter).sort((a,b) => b[1]-a[1]);
+    renderTable('table-niche-filters', nicheFilterRows, 'Nicho filtrado');
 
     const byNiche = {};
     const byProduct = {};
