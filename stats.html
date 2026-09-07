@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapuzinho 3D — Estatísticas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0D10;
+    --bg-raised: #10151A;
+    --surface: #141A20;
+    --surface-2: #1B222A;
+    --line: #262E36;
+    --line-strong: #384049;
+    --text: #E7ECEF;
+    --text-dim: #8B96A1;
+    --cyan: #3FE6D0;
+    --cyan-dim: #1F6D64;
+    --orange: #FF7A45;
+    --radius: 2px;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 34px 34px;
+    background-attachment: fixed;
+    background-position: -1px -1px;
+    min-height: 100vh;
+  }
+  a{ color: var(--cyan); text-decoration: none; }
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+  .wrap{ max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap: wrap; gap: 16px;
+    margin-bottom: 34px;
+  }
+  .brand{
+    display:flex; align-items:center; gap: 10px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size: 20px;
+  }
+  .brand-mark{
+    width: 30px; height: 30px;
+    border: 1px solid var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--cyan);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .brand-mark::before{ content: "K3D"; }
+  .subtitle{ color: var(--text-dim); font-size: 13px; }
+
+  .refresh-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .kpis{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .kpi{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .kpi-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .kpi-value{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--cyan);
+  }
+
+  section{ margin-bottom: 40px; }
+  h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 16px;
+    display:flex; align-items:center; gap: 10px;
+  }
+  h2 .dot{
+    width:6px; height:6px; background: var(--cyan); border-radius:50%;
+  }
+
+  table{
+    width:100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  thead th{
+    text-align:left;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  tbody td{
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  tbody tr:last-child td{ border-bottom: none; }
+  tbody tr:hover{ background: var(--surface-2); }
+  td.num, th.num{ text-align:right; font-family:'IBM Plex Mono', monospace; color: var(--cyan); }
+
+  .bar-cell{ position:relative; }
+  .bar-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background: rgba(63,230,208,0.10);
+    z-index: 0;
+  }
+  .bar-content{ position:relative; z-index:1; display:flex; justify-content:space-between; gap: 12px; }
+
+  .empty{
+    text-align:center; padding: 60px 20px;
+    color: var(--text-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+
+  select, input[type="date"]{
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+  }
+  .filters{
+    display:flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    align-items:center;
+  }
+  .filters label{ font-size: 12px; color: var(--text-dim); margin-right: 4px; }
+</style>
+</head>
+<body>
+<div id="gate" style="position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:32px;max-width:340px;width:100%;">
+    <div class="brand" style="margin-bottom:18px;"><span class="brand-mark"></span> Kapuzinho 3D</div>
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Digite a senha para ver as estatísticas.</div>
+    <input type="password" id="gate-input" placeholder="Senha" style="width:100%;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text);font-family:inherit;font-size:14px;padding:10px 12px;border-radius:var(--radius);margin-bottom:12px;">
+    <button id="gate-btn" style="width:100%;background:var(--cyan);color:#04211C;font-weight:600;font-size:14px;padding:10px;border:none;border-radius:var(--radius);cursor:pointer;">Entrar</button>
+    <div id="gate-error" style="color:var(--orange);font-size:12px;margin-top:10px;display:none;">Senha incorreta.</div>
+  </div>
+</div>
+
+<div class="wrap" id="content" style="display:none;">
+
+
+  <header>
+    <div>
+      <div class="brand"><span class="brand-mark"></span> Kapuzinho 3D — Estatísticas</div>
+      <div class="subtitle">Visitas e cliques registrados no site</div>
+    </div>
+    <div class="refresh-note mono" id="last-update">carregando…</div>
+  </header>
+
+  <div class="filters">
+    <label for="period-select">Período:</label>
+    <select id="period-select">
+      <option value="all">Todo o histórico</option>
+      <option value="30">Últimos 30 dias</option>
+      <option value="7">Últimos 7 dias</option>
+      <option value="1">Últimas 24 horas</option>
+    </select>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-label">Visualizações de página</div>
+      <div class="kpi-value" id="kpi-views">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Cliques em "pedir"</div>
+      <div class="kpi-value" id="kpi-clicks">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Nichos diferentes clicados</div>
+      <div class="kpi-value" id="kpi-niches">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Produtos diferentes pedidos</div>
+      <div class="kpi-value" id="kpi-products">—</div>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="dot"></span>Cliques por nicho</h2>
+    <div id="table-niches"></div>
+  </section>
+
+  <section>
+    <h2><span class="dot"></span>Produtos mais pedidos</h2>
+    <div id="table-products"></div>
+  </section>
+
+</div>
+
+<script>
+  const PASS_HASH = "0e302543106c5e9d8c925bacdaa300539acb37c83142f46a17c29f875bbf6e10";
+  const SESSION_KEY = "kapuzinho_stats_unlocked";
+
+  async function sha256Hex(text){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
+  function unlock(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
+
+  async function tryPassword(){
+    const val = document.getElementById('gate-input').value;
+    const hash = await sha256Hex(val);
+    if(hash === PASS_HASH){
+      sessionStorage.setItem(SESSION_KEY, "1");
+      unlock();
+    }else{
+      document.getElementById('gate-error').style.display = 'block';
+    }
+  }
+
+  document.getElementById('gate-btn').addEventListener('click', tryPassword);
+  document.getElementById('gate-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter') tryPassword();
+  });
+
+  if(sessionStorage.getItem(SESSION_KEY) === "1"){
+    unlock();
+  }
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCXlTaF4cEcrnrl_y-i6SglFYqwH6L0ngE",
+    authDomain: "kapuzinho-3d.firebaseapp.com",
+    databaseURL: "https://kapuzinho-3d-default-rtdb.firebaseio.com",
+    projectId: "kapuzinho-3d",
+    storageBucket: "kapuzinho-3d.firebasestorage.app",
+    messagingSenderId: "646917364083",
+    appId: "1:646917364083:web:27f50c520eea36de9e8d06"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const statsDb = firebase.database();
+
+  let allEvents = [];
+
+  function escHtml(str){
+    return String(str == null ? "" : str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function renderTable(containerId, rows, labelHeader){
+    const container = document.getElementById(containerId);
+    if(rows.length === 0){
+      container.innerHTML = `<div class="empty">Sem dados ainda para este período.</div>`;
+      return;
+    }
+    const max = rows[0][1];
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>${labelHeader}</th><th class="num">Cliques</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map(([name, count]) => `
+            <tr>
+              <td class="bar-cell">
+                <div class="bar-fill" style="width:${max ? (count / max * 100) : 0}%"></div>
+                <div class="bar-content">${escHtml(name)}</div>
+              </td>
+              <td class="num">${count}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function cutoffTs(){
+    const val = document.getElementById('period-select').value;
+    if(val === 'all') return 0;
+    const days = parseInt(val, 10);
+    return Date.now() - days * 24 * 60 * 60 * 1000;
+  }
+
+  function renderAll(){
+    const since = cutoffTs();
+    const events = allEvents.filter(e => e.ts >= since);
+
+    const views = events.filter(e => e.type === 'view').length;
+    const clicks = events.filter(e => e.type === 'click');
+
+    const byNiche = {};
+    const byProduct = {};
+    clicks.forEach(e => {
+      const n = e.niche || '(sem nicho)';
+      const p = e.product || '(sem produto)';
+      byNiche[n] = (byNiche[n] || 0) + 1;
+      byProduct[p] = (byProduct[p] || 0) + 1;
+    });
+
+    const nicheRows = Object.entries(byNiche).sort((a,b) => b[1]-a[1]);
+    const productRows = Object.entries(byProduct).sort((a,b) => b[1]-a[1]).slice(0, 50);
+
+    document.getElementById('kpi-views').textContent = views;
+    document.getElementById('kpi-clicks').textContent = clicks.length;
+    document.getElementById('kpi-niches').textContent = nicheRows.length;
+    document.getElementById('kpi-products').textContent = Object.keys(byProduct).length;
+
+    renderTable('table-niches', nicheRows, 'Nicho');
+    renderTable('table-products', productRows, 'Produto (top 50)');
+  }
+
+  document.getElementById('period-select').addEventListener('change', renderAll);
+
+  statsDb.ref('kapuzinho_stats/events').on('value', snapshot => {
+    const data = snapshot.val() || {};
+    allEvents = Object.values(data);
+    document.getElementById('last-update').textContent =
+      'atualizado ' + new Date().toLocaleTimeString('pt-BR');
+    renderAll();
+  }, error => {
+    document.getElementById('last-update').textContent = 'erro ao carregar dados';
+    console.error(error);
+  });
+</script>
+
+</body>
+</html>
