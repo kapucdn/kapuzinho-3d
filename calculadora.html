@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Custo — Kapuzinho 3D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --kraft: #c9a47a;
+    --kraft-dark: #a8845f;
+    --ink: #1c1814;
+    --ink-soft: #2b241d;
+    --cream: #f2e6cd;
+    --gold: #d6ae6a;
+    --gold-soft: #e9cd97;
+    --line: rgba(242,230,205,0.14);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #2a231b 0%, transparent 60%),
+      var(--ink);
+    color: var(--cream);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  body{
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px;
+  }
+
+  .sheet{
+    width:100%;
+    max-width: 880px;
+  }
+
+  .tagline{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .brand{
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 1.65rem;
+    letter-spacing: 0.01em;
+    color: var(--gold-soft);
+  }
+  .brand span{ color: var(--cream); font-weight: 500; }
+
+  .tagline p{
+    margin:0;
+    font-size: 0.88rem;
+    color: rgba(242,230,205,0.55);
+    max-width: 320px;
+  }
+
+  .panel{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 0;
+    background: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 720px){
+    .panel{ grid-template-columns: 1fr; }
+  }
+
+  .inputs{
+    padding: 34px 36px;
+  }
+
+  .inputs h2, .results h2{
+    font-family:'Oswald', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: var(--gold);
+    margin: 0 0 22px;
+  }
+
+  .group{
+    margin-bottom: 20px;
+  }
+  .group:last-child{ margin-bottom: 0; }
+
+  .group-label{
+    font-size: 0.72rem;
+    color: rgba(242,230,205,0.45);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  label{
+    display:block;
+    font-size: 0.85rem;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+
+  .field{
+    position:relative;
+  }
+
+  .field span.prefix{
+    position:absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(242,230,205,0.4);
+    font-size: 0.85rem;
+    pointer-events:none;
+  }
+
+  input[type="number"]{
+    width:100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(242,230,205,0.16);
+    border-radius: 8px;
+    color: var(--cream);
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .field.has-prefix input{ padding-left: 26px; }
+
+  input[type="number"]:focus{
+    outline:none;
+    border-color: var(--gold);
+    background: rgba(0,0,0,0.35);
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none; margin:0;
+  }
+
+  hr.div{
+    border:none;
+    border-top: 1px dashed rgba(242,230,205,0.16);
+    margin: 22px 0;
+  }
+
+  .margin-row{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+  }
+  .margin-row input[type="range"]{
+    flex:1;
+    accent-color: var(--gold);
+  }
+  .margin-value{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size: 1.1rem;
+    color: var(--gold-soft);
+    min-width: 52px;
+    text-align:right;
+  }
+
+  .results{
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)),
+      var(--kraft);
+    padding: 34px 36px;
+    color: var(--ink);
+    position:relative;
+  }
+
+  .results h2{ color: var(--ink-soft); opacity: .65; }
+
+  .lines{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .line{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size: 0.9rem;
+    color: rgba(28,24,20,0.72);
+  }
+  .line strong{
+    color: var(--ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .total-card{
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .total-card .label{
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(242,230,205,0.5);
+    margin-bottom: 4px;
+  }
+  .total-card .value{
+    font-family:'Oswald', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  .sell-card{
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .sell-card .label{
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(28,24,20,0.6);
+    margin-bottom: 4px;
+  }
+  .sell-card .value{
+    font-family:'Oswald', sans-serif;
+    font-size: 2.35rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .sell-card .sub{
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: rgba(28,24,20,0.65);
+  }
+
+  .footnote{
+    margin-top: 24px;
+    font-size: 0.78rem;
+    color: rgba(242,230,205,0.4);
+    line-height: 1.5;
+  }
+
+  ::selection{ background: var(--gold); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="tagline">
+    <div class="brand">KAPUZINHO <span>3D</span></div>
+    <p>Calculadora de custo por peça — filamento, energia e preço de venda.</p>
+  </div>
+
+  <div class="panel">
+
+    <div class="inputs">
+      <h2>DADOS DA IMPRESSÃO</h2>
+
+      <div class="group">
+        <div class="group-label">Filamento</div>
+        <div class="row">
+          <div>
+            <label for="rollPrice">Preço pago no rolo</label>
+            <div class="field has-prefix">
+              <span class="prefix">R$</span>
+              <input type="number" id="rollPrice" value="90" min="0" step="0.01">
+            </div>
+          </div>
+          <div>
+            <label for="rollWeight">Peso do rolo</label>
+            <div class="field">
+              <input type="number" id="rollWeight" value="1000" min="1" step="1">
+              <span class="prefix" style="left:auto; right:12px;">g</span>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <div>
+            <label for="gramsUsed">Gramas usadas no projeto</label>
+            <div class="field">
+              <input type="number" id="gramsUsed" value="186" min="0" step="1">
+              <span class="prefix" style="left:auto; right:12px;">g</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="div">
+
+      <div class="group">
+        <div class="group-label">Energia</div>
+        <div class="row">
+          <div>
+            <label for="kwhPrice">Preço do kWh</label>
+            <div class="field has-prefix">
+              <span class="prefix">R$</span>
+              <input type="number" id="kwhPrice" value="0.75" min="0" step="0.01">
+            </div>
+          </div>
+          <div>
+            <label for="power">Potência da impressora</label>
+            <div class="field">
+              <input type="number" id="power" value="200" min="0" step="1">
+              <span class="prefix" style="left:auto; right:12px;">W</span>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <div>
+            <label for="printTime">Tempo de impressão</label>
+            <div class="field">
+              <input type="number" id="printTime" value="4" min="0" step="0.1">
+              <span class="prefix" style="left:auto; right:12px;">h</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="div">
+
+      <div class="group">
+        <div class="group-label">Margem de lucro desejada</div>
+        <div class="margin-row">
+          <input type="range" id="margin" min="0" max="80" value="40" step="1">
+          <div class="margin-value" id="marginValue">40%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results">
+      <h2>RESULTADO</h2>
+
+      <div class="lines">
+        <div class="line"><span>Custo do filamento</span><strong id="outFilament">R$ 0,00</strong></div>
+        <div class="line"><span>Custo de energia</span><strong id="outEnergy">R$ 0,00</strong></div>
+      </div>
+
+      <div class="total-card">
+        <div class="label">Gasto total da peça</div>
+        <div class="value" id="outTotal">R$ 0,00</div>
+      </div>
+
+      <div class="sell-card">
+        <div class="label">Preço sugerido de venda</div>
+        <div class="value" id="outSell">R$ 0,00</div>
+        <div class="sub" id="outProfit">Lucro estimado: R$ 0,00</div>
+      </div>
+
+      <div class="footnote">
+        Não inclui desgaste da impressora, mão de obra, embalagem ou falhas de impressão.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+
+  function calc(){
+    const rollPrice  = parseFloat($('rollPrice').value)  || 0;
+    const rollWeight = parseFloat($('rollWeight').value) || 1;
+    const gramsUsed  = parseFloat($('gramsUsed').value)  || 0;
+    const kwhPrice   = parseFloat($('kwhPrice').value)   || 0;
+    const power      = parseFloat($('power').value)      || 0;
+    const printTime  = parseFloat($('printTime').value)  || 0;
+    const margin     = parseFloat($('margin').value)     || 0;
+
+    const filamentCost = (rollPrice / rollWeight) * gramsUsed;
+    const energyKwh = (power * printTime) / 1000;
+    const energyCost = energyKwh * kwhPrice;
+    const total = filamentCost + energyCost;
+
+    const sellPrice = margin < 100 ? total / (1 - margin / 100) : total;
+    const profit = sellPrice - total;
+
+    $('outFilament').textContent = fmt(filamentCost);
+    $('outEnergy').textContent = fmt(energyCost);
+    $('outTotal').textContent = fmt(total);
+    $('outSell').textContent = fmt(sellPrice);
+    $('outProfit').textContent = `Lucro estimado: ${fmt(profit)}`;
+    $('marginValue').textContent = margin + '%';
+  }
+
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+
+</body>
+</html>
